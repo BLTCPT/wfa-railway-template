@@ -1,0 +1,18 @@
+# Railway deployment configuration
+# https://docs.railway.app/reference/config-as-code
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+numReplicas = 1
+sleepApplication = false
+healthcheckPath = "/health"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# Optional: Cron schedule for daily rebalance
+# 3:40 PM ET = 19:40 UTC (EST) or 18:40 UTC (EDT)
+# cronSchedule = "40 19 * * 1-5"
