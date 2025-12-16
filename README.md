@@ -1,6 +1,6 @@
 # WFA Railway Deployment Template
 
-A complete template for deploying Walk-Forward Analysis (WFA) trading systems to Railway with Composer integration.
+A complete template for deploying Walk-Forward Analysis (WFA) trading systems to Railway with **Composer** or **Schwab** brokerage integration.
 
 ## What This Template Provides
 
@@ -9,6 +9,7 @@ This template gives you everything needed to deploy your own trading model:
 - 🚀 **Railway deployment** - One-click cloud deployment
 - 📊 **FastAPI backend** - REST API for your model
 - 🔗 **Composer integration** - Connect to your brokerage account
+- 💼 **Schwab API support** - Direct Charles Schwab integration
 - 💾 **DuckDB persistence** - Your data survives redeployments
 - 📱 **Discord alerts** - Get notified on trades
 - ⏰ **Scheduled execution** - Daily automated rebalancing
@@ -18,7 +19,9 @@ This template gives you everything needed to deploy your own trading model:
 Before starting, you'll need:
 
 1. **Railway account** - [Sign up free](https://railway.app)
-2. **Composer account** - [Get API keys](https://app.composer.trade/settings/api)
+2. **Brokerage account** - Choose one:
+   - **Composer account** - [Get API keys](https://app.composer.trade/settings/api)
+   - **Schwab account** - [Register for API](https://developer.schwab.com) (see [Schwab API Guide](docs/SCHWAB_API.md))
 3. **Discord server** - For trade notifications (optional)
 4. **Your WFA model** - The strategy logic you want to deploy
 
@@ -133,9 +136,15 @@ curl https://your-app.up.railway.app/health
 | `/api/v1/rebalance` | POST | Execute rebalance (dry_run available) |
 | `/api/v1/history` | GET | Get trade history |
 
-## Composer Integration
+## Brokerage Integration
 
-### Trading Window
+This template supports two brokerage options:
+
+### Option 1: Composer Integration
+
+**Best for:** Users who want Composer's backtesting and portfolio management features.
+
+#### Trading Window
 
 Composer executes stock trades from **3:45 PM to 4:00 PM ET**.
 
@@ -144,7 +153,7 @@ Schedule your rebalance for **3:40 PM ET** to allow time for:
 2. API submission
 3. Order queuing
 
-### Account Types
+#### Account Types
 
 Composer supports multiple account types:
 - Individual brokerage
@@ -153,6 +162,67 @@ Composer supports multiple account types:
 - Tax-advantaged accounts
 
 Configure `COMPOSER_ACCOUNT_UUID` to target a specific account.
+
+#### Setup
+
+```bash
+railway variables --set "COMPOSER_API_KEY=your_key"
+railway variables --set "COMPOSER_API_SECRET=your_secret"
+```
+
+### Option 2: Schwab API Integration
+
+**Best for:** Users with Charles Schwab accounts who want direct brokerage integration.
+
+#### Features
+
+- Direct trade execution on Schwab accounts
+- Real-time market data and quotes
+- Support for stocks and options
+- OAuth2 authentication with automatic token refresh
+
+#### Trading Hours
+
+Schwab trading hours: **9:30 AM - 4:00 PM ET** (regular hours)
+
+Schedule your rebalance for **3:30 PM ET** for end-of-day execution.
+
+#### Setup
+
+1. **Register for API access** at [developer.schwab.com](https://developer.schwab.com)
+2. **Create an application** and get your API Key and Secret
+3. **Configure environment variables**:
+
+```bash
+railway variables --set "SCHWAB_API_KEY=your_key"
+railway variables --set "SCHWAB_API_SECRET=your_secret"
+railway variables --set "SCHWAB_REDIRECT_URI=https://your-app.up.railway.app/oauth/callback"
+```
+
+#### Complete Documentation
+
+See the **[Schwab API Integration Guide](docs/SCHWAB_API.md)** for:
+- Detailed authentication setup
+- Code examples and implementation
+- Trading workflows
+- Best practices and troubleshooting
+- Security considerations
+
+#### Quick Example
+
+```python
+from schwab_client import SchwabClient
+
+# Initialize client
+client = SchwabClient()
+
+# Get positions
+positions = client.get_positions()
+
+# Execute trades based on your model signals
+trades = client.calculate_trades(positions, signals)
+result = client.execute_trades(trades, dry_run=True)
+```
 
 ## Scheduling
 

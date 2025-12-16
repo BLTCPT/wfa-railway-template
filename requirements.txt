@@ -16,3 +16,7 @@ httpx>=0.25.0
 # Scheduling
 schedule>=1.2.0
 pytz>=2023.3
+apscheduler>=3.10.0
+
+# Schwab API (optional - for direct Schwab integration)
+schwab-py>=1.5.0
